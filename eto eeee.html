@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Finance Tracker - Clean Layout</title>
+  <style>
+    /* Reset and base */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f3ee;
+      color: #3e3d3a;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    h1 {
+      text-align: center;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      color: #4b6e4b;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    /* Cards */
+    .card {
+      background: #fff;
+      padding: 1.5rem 1.5rem;
+      border-radius: 12px;
+      box-shadow:
+        0 2px 6px rgb(0 0 0 / 0.1),
+        0 6px 12px rgb(0 0 0 / 0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      min-height: 180px;
+      border-left: 6px solid #789262;
+      transition: border-color 0.3s ease;
+    }
+    .card:hover {
+      border-color: #597d54;
+    }
+    h2 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      color: #597d54;
+      font-weight: 600;
+      font-size: 1.25rem;
+    }
+    /* Form row */
+    .form-row {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .form-row input,
+    .form-row select {
+      flex: 1 1 120px;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      border: 1.5px solid #b1b099;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+    .form-row input:focus,
+    .form-row select:focus {
+      border-color: #7ea345;
+      outline: none;
+    }
+    .form-row button {
+      flex: 0 0 auto;
+      background-color: #789262;
+      color: white;
+      border: none;
+      padding: 0.55rem 1.25rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .form-row button:hover {
+      background-color: #597d54;
+    }
+    /* Special budget row with labels */
+    .budget-row label {
+      flex: 1 1 120px;
+      display: flex;
+      flex-direction: column;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #556b2f;
+    }
+    .budget-row input {
+      margin-top: 0.25rem;
+    }
+    /* Lists */
+    .list {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 0.5rem;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    .list li {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.35rem 0.5rem;
+      border-radius: 6px;
+      background: #d9e2c8;
+      color: #3e3d3a;
+      margin-bottom: 0.3rem;
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+    .list li button {
+      background: transparent;
+      border: none;
+      color: #7a3e3e;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: color 0.2s ease;
+    }
+    .list li button:hover {
+      color: #b74141;
+    }
+    /* Export button */
+    .export-btn {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: #7a9e7e;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-weight: 700;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      width: 100%;
+    }
+    .export-btn:hover {
+      background: #597d54;
+    }
+    /* Chart styling */
+    canvas {
+      width: 100% !important;
+      height: 220px !important;
+      user-select: none;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <main class="container">
+    <h1>🌿 My Finance Tracker</h1>
+
+    <section class="card">
+      <h2>🔁 Monthly Recurring Expenses</h2>
+      <div class="form-row">
+        <input type="text" id="recDesc" placeholder="Description" />
+        <input type="number" id="recAmount" placeholder="Amount" />
+        <button onclick="addRecurring()">Add Recurring</button>
+      </div>
+      <ul id="recList" class="list"></ul>
+    </section>
+
+    <section class="card">
+      <h2>💼 Monthly Budget & Goals</h2>
+      <div class="form-row budget-row">
+        <label>
+          Max Expenses:
+          <input type="number" id="budgetExpense" />
+        </label>
+        <label>
+          Saving Goal:
+          <input type="number" id="budgetSaving" />
+        </label>
+        <button onclick="saveBudgets()">Save Budget</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>➕ Add New Entry</h2>
+      <div class="form-row">
+        <select id="category">
+          <option value="Revenue">Revenue</option>
+          <option value="Expense">Expense</option>
+          <option value="Saving">Saving</option>
+          <option value="Goal">Goal</option>
+        </select>
+        <input type="text" id="desc" placeholder="Description" />
+        <input type="number" id="amount" placeholder="Amount" />
+        <input type="date" id="date" />
+        <button onclick="addEntry()">Add Entry</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>📅 Filter Entries</h2>
+      <select id="filterType" onchange="updateUI()">
+        <option value="all">All</option>
+        <option value="daily">Today</option>
+        <option value="monthly">This Month</option>
+        <option value="yearly">This Year</option>
+      </select>
+    </section>
+
+    <section class="card">
+      <h2>📈 Summary Chart</h2>
+      <canvas id="summaryChart"></canvas>
+    </section>
+
+    <section class="card">
+      <h2>📒 My Entries</h2>
+      <ul id="entryList" class="list"></ul>
+    </section>
+
+    <button class="export-btn" onclick="exportToCSV()">Export to Excel (CSV)</button>
+  </main>
+
+  <script>
+    // Data storage keys
+    const STORAGE_KEY_ENTRIES = "financeTrackerEntries";
+    const STORAGE_KEY_RECURRING = "financeTrackerRecurring";
+    const STORAGE_KEY_BUDGETS = "financeTrackerBudgets";
+
+    // Load data or initialize
+    let entries = JSON.parse(localStorage.getItem(STORAGE_KEY_ENTRIES)) || [];
+    let recurring = JSON.parse(localStorage.getItem(STORAGE_KEY_RECURRING)) || [];
+    let budgets = JSON.parse(localStorage.getItem(STORAGE_KEY_BUDGETS)) || {
+      maxExpense: 0,
+      savingGoal: 0,
+    };
+
+    // DOM references
+    const recList = document.getElementById("recList");
+    const entryList = document.getElementById("entryList");
+    const budgetExpenseInput = document.getElementById("budgetExpense");
+    const budgetSavingInput = document.getElementById("budgetSaving");
+    const filterTypeSelect = document.getElementById("filterType");
+    const summaryChartCtx = document.getElementById("summaryChart").getContext("2d");
+
+    // Initialize budget inputs
+    budgetExpenseInput.value = budgets.maxExpense || "";
+    budgetSavingInput.value = budgets.savingGoal || "";
+
+    // Add recurring expense
+    function addRecurring() {
+      const desc = document.getElementById("recDesc").value.trim();
+      const amount = parseFloat(document.getElementById("recAmount").value);
+      if (!desc || isNaN(amount) || amount <= 0) {
+        alert("Please enter a valid description and positive amount.");
+        return;
+      }
+      recurring.push({ desc, amount });
+      localStorage.setItem(STORAGE_KEY_RECURRING, JSON.stringify(recurring));
+      document.getElementById("recDesc").value = "";
+      document.getElementById("recAmount").value = "";
+      updateUI();
+    }
+
+    // Save budgets
+    function saveBudgets() {
+      const maxExpense = parseFloat(budgetExpenseInput.value);
+      const savingGoal = parseFloat(budgetSavingInput.value);
+      if (isNaN(maxExpense) || isNaN(savingGoal)) {
+        alert("Please enter valid numbers for budgets.");
+        return;
+      }
+      budgets = { maxExpense, savingGoal };
+      localStorage.setItem(STORAGE_KEY_BUDGETS, JSON.stringify(budgets));
+      alert("Budgets saved.");
+      updateUI();
+    }
+
+    // Add new entry (Revenue, Expense, Saving, Goal)
+    function addEntry() {
+      const category = document.getElementById("category").value;
+      const desc = document.getElementById("desc").value.trim();
+      const amount = parseFloat(document.getElementById("amount").value);
+      const date = document.getElementById("date").value;
+      if (!desc || isNaN(amount) || amount <= 0 || !date) {
+        alert("Please fill all fields with valid data.");
+        return;
+      }
+      entries.push({ category, desc, amount, date });
+      localStorage.setItem(STORAGE_KEY_ENTRIES, JSON.stringify(entries));
+      document.getElementById("desc").value = "";
+      document.getElementById("amount").value = "";
+      document.getElementById("date").value = "";
+      updateUI();
+    }
+
+    // Update the UI: lists and chart
+    function updateUI() {
+      renderRecurring();
+      renderEntries();
+      updateChart();
+    }
+
+    // Render recurring expenses list
+    function renderRecurring() {
+      recList.innerHTML = "";
+      recurring.forEach((item, i) => {
+        const li = document.createElement("li");
+        li.textContent = `${item.desc}: $${item.amount.toFixed(2)}`;
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "✖";
+        delBtn.onclick = () => {
+          recurring.splice(i, 1);
+          localStorage.setItem(STORAGE_KEY_RECURRING, JSON.stringify(recurring));
+          updateUI();
+        };
+        li.appendChild(delBtn);
+        recList.appendChild(li);
+      });
+    }
+
+    // Render entries list with filtering
+    function renderEntries() {
+      const filter = filterTypeSelect.value;
+      entryList.innerHTML = "";
+
+      // Helper: filter by date
+      const today = new Date();
+      const filtered = entries.filter((entry) => {
+        const entryDate = new Date(entry.date);
+        if (filter === "daily") {
+          return (
+            entryDate.getFullYear() === today.getFullYear() &&
+            entryDate.getMonth() === today.getMonth() &&
+            entryDate.getDate() === today.getDate()
+          );
+        } else if (filter === "monthly") {
+          return (
+            entryDate.getFullYear() === today.getFullYear() &&
+            entryDate.getMonth() === today.getMonth()
+          );
+        } else if (filter === "yearly") {
+          return entryDate.getFullYear() === today.getFullYear();
+        }
+        return true; // "all"
+      });
+
+      filtered.forEach((entry, i) => {
+        const li = document.createElement("li");
+        li.textContent = `${entry.date} | ${entry.category} | ${entry.desc}: $${entry.amount.toFixed(2)}`;
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "✖";
+        delBtn.onclick = () => {
+          entries.splice(entries.indexOf(entry), 1);
+          localStorage.setItem(STORAGE_KEY_ENTRIES, JSON.stringify(entries));
+          updateUI();
+        };
+        li.appendChild(delBtn);
+        entryList.appendChild(li);
+      });
+    }
+
+    // Chart.js instance
+    let chartInstance = null;
+
+    // Update Chart
+    function updateChart() {
+      // Aggregate sums by category
+      const sums = { Revenue: 0, Expense: 0, Saving: 0, Goal: 0 };
+
+      // Add recurring expenses to Expense monthly total (assumed monthly)
+      sums.Expense += recurring.reduce((acc, cur) => acc + cur.amount, 0);
+
+      entries.forEach(({ category, amount }) => {
+        if (sums.hasOwnProperty(category)) sums[category] += amount;
+      });
+
+      const data = {
+        labels: Object.keys(sums),
+        datasets: [
+          {
+            label: "Total by Category",
+            data: Object.values(sums),
+            backgroundColor: [
+              "#6aaa64", // Revenue - green
+              "#e06c75", // Expense - red
+              "#56b6c2", // Saving - blue
+              "#c678dd", // Goal - purple
+            ],
+            borderRadius: 6,
+          },
+        ],
+      };
+
+      const options = {
+        responsive: true,
+        plugins: {
+          legend: { position: "bottom" },
+        },
+      };
+
+      if (chartInstance) {
+        chartInstance.data = data;
+        chartInstance.options = options;
+        chartInstance.update();
+      } else {
+        chartInstance = new Chart(summaryChartCtx, {
+          type: "bar",
+          data,
+          options,
+        });
+      }
+    }
+
+    // Export data as CSV
+    function exportToCSV() {
+      let csv = "Category,Description,Amount,Date\n";
+      entries.forEach(({ category, desc, amount, date }) => {
+        csv += `"${category}","${desc}",${amount},"${date}"\n`;
+      });
+
+      // Create blob and link to download
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "finance_data.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Run on load
+    updateUI();
+  </script>
+</body>
+</html>
